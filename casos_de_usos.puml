@@ -1,0 +1,39 @@
+@startuml
+actor usuario as A1
+actor moderador as A2
+
+package SDGDOP{
+usecase (modicar publicacion) as UC1
+usecase (eliminar publicacion) as UC2
+usecase (registrar datos personales) as UC3
+usecase (publicar objetos) as UC4
+usecase (publicar objetos perdidos) as UC5
+usecase (publicar objetos encontrados) as UC6
+usecase (ver publicaciones de objetos encontrados) as UC7
+usecase (archivar post resueltos) as UC9
+usecase (notificar objeto encontrado) as UC10
+usecase (verificar publicacion) as UC11
+usecase (ver publicaciones objetos perdidos) as UC13
+
+
+
+A1---UC1
+A1---UC3
+A1---UC4
+A1---UC7
+A1---UC13
+
+A2---UC1
+A2---UC7
+A2---UC9
+A2---UC2
+A2---UC11
+A2---UC13
+
+UC4<--UC5
+UC4<--UC6
+
+UC6 ..>UC10 : include
+
+}
+@enduml
