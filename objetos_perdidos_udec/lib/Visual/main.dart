@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../Modelo/Objeto.dart';
+
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -21,30 +22,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Modelo de datos para un objeto encontrado
-class ObjetoEncontrado {
-  final String id;
-  final String nombre;
-  final String descripcion;
-  final String categoria;
-  final String lugarEncontrado;
-  final String facultad;
-  final DateTime fechaEncontrado;
-  final String contacto;
-
-  ObjetoEncontrado({
-    required this.id,
-    required this.nombre,
-    required this.descripcion,
-    required this.categoria,
-    required this.lugarEncontrado,
-    required this.facultad,
-    required this.fechaEncontrado,
-    required this.contacto,
-  });
-}
-
-// Pantalla principal con el botón para reportar objeto encontrado
+// Pantalla principal con el botón para reportar objetos
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
 
@@ -53,7 +31,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final List<ObjetoEncontrado> _objetosEncontrados = [];
+  final List<Objeto> _objetos = [];
 
   void _mostrarDialogoReportarObjeto() {
     showDialog(
@@ -63,7 +41,7 @@ class _MainScreenState extends State<MainScreen> {
         return ReportarObjetoDialog(
           onObjetoReportado: (objeto) {
             setState(() {
-              _objetosEncontrados.insert(0, objeto);
+              _objetos.insert(0, objeto);
             });
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -94,7 +72,7 @@ class _MainScreenState extends State<MainScreen> {
         ),
         elevation: 2,
       ),
-      body: _objetosEncontrados.isEmpty
+      body: _objetos.isEmpty
           ? Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -115,7 +93,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              '¿Encontraste algo? Repórtalo aquí',
+              '¿Encontraste algo? ¿Perdiste algo? Repórtalo aquí',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[500],
@@ -126,9 +104,9 @@ class _MainScreenState extends State<MainScreen> {
       )
           : ListView.builder(
         padding: const EdgeInsets.all(16),
-        itemCount: _objetosEncontrados.length,
+        itemCount: _objetos.length,
         itemBuilder: (context, index) {
-          final objeto = _objetosEncontrados[index];
+          final objeto = _objetos[index];
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
             elevation: 2,
@@ -157,20 +135,28 @@ class _MainScreenState extends State<MainScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              objeto.nombre,
+                              objeto.nombreObjeto,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text(
+                            // verifica si objeto es encontrado o perdido
+                            objeto.isEncontrado
+                                ? Text(
                               'Encontrado en ${objeto.lugarEncontrado}',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[600],
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.green),
+                            )
+                                : Text(
+                              'Perdido en ${objeto.lugarEncontrado}',
+                              style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.red
                               ),
-                            ),
+                            )
                           ],
                         ),
                       ),
@@ -178,7 +164,7 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    objeto.descripcion,
+                    objeto.descripcionObjeto,
                     style: const TextStyle(fontSize: 14),
                   ),
                   const SizedBox(height: 12),
@@ -215,6 +201,16 @@ class _MainScreenState extends State<MainScreen> {
                           fontSize: 12,
                         ),
                       ),
+                      // Chip para el estado del objeto
+                      Chip(
+                        avatar: const Icon(Icons.check_circle, size: 16),
+                        label: Text(objeto.isEncontrado ? 'Encontrado' : 'Perdido'),
+                        backgroundColor: objeto.isEncontrado ? Colors.green[50] : Colors.red[50],
+                        labelStyle: TextStyle(
+                          color: objeto.isEncontrado ? Colors.green[700] : Colors.red[700],
+                          fontSize: 12,
+                        ),
+                      ),
                     ],
                   ),
                   const Divider(height: 24),
@@ -243,16 +239,16 @@ class _MainScreenState extends State<MainScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _mostrarDialogoReportarObjeto,
         icon: const Icon(Icons.add_circle_outline),
-        label: const Text('Reportar Objeto Encontrado'),
+        label: const Text('Reportar Objeto'),
         backgroundColor: Colors.blue,
       ),
     );
   }
 }
 
-// Diálogo emergente para reportar objeto encontrado
+// Diálogo emergente para reportar objetos
 class ReportarObjetoDialog extends StatefulWidget {
-  final Function(ObjetoEncontrado) onObjetoReportado;
+  final Function(Objeto) onObjetoReportado;
 
   const ReportarObjetoDialog({
     Key? key,
@@ -272,6 +268,7 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
 
   String? _categoriaSeleccionada;
   String? _facultadSeleccionada;
+  String? _estadoEncuentro;
   DateTime _fechaEncontrado = DateTime.now();
   bool _isLoading = false;
 
@@ -308,6 +305,11 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
     'Otra ubicación'
   ];
 
+  final List<String> _estadosEncuentro = [
+    'Encontrado',
+    'Perdido'
+  ];
+
   @override
   void dispose() {
     _nombreController.dispose();
@@ -323,8 +325,9 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
       initialDate: _fechaEncontrado,
       firstDate: DateTime.now().subtract(const Duration(days: 90)),
       lastDate: DateTime.now(),
-      locale: const Locale('es', 'ES'),
-      helpText: 'Selecciona la fecha en que encontraste el objeto',
+      helpText: 'Selecciona la fecha',
+      cancelText: 'Cancelar',
+      confirmText: 'Aceptar',
     );
 
     if (fechaSeleccionada != null) {
@@ -343,15 +346,17 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
       // Simular guardado en el sistema
       await Future.delayed(const Duration(seconds: 1));
 
-      final nuevoObjeto = ObjetoEncontrado(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        nombre: _nombreController.text.trim(),
-        descripcion: _descripcionController.text.trim(),
+      final nuevoObjeto = Objeto(
+        idObjeto: DateTime.now().millisecondsSinceEpoch.toString(),
+        nombreObjeto: _nombreController.text.trim(),
+        descripcionObjeto: _descripcionController.text.trim(),
         categoria: _categoriaSeleccionada!,
         lugarEncontrado: _lugarController.text.trim(),
         facultad: _facultadSeleccionada!,
         fechaEncontrado: _fechaEncontrado,
         contacto: _contactoController.text.trim(),
+        estadoEncuentro: _estadoEncuentro.toString() == 'Encontrado' ? true : false,
+        estadoVerificacion: false, // al crear una publicación, esta no ha sido verificada
       );
 
       setState(() {
@@ -502,14 +507,14 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                       TextFormField(
                         controller: _lugarController,
                         decoration: const InputDecoration(
-                          labelText: 'Lugar específico donde lo encontraste *',
+                          labelText: 'Lugar específico del objeto *',
                           hintText: 'Ej: Sala E-201, Baño 2do piso',
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.place_outlined),
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Indica dónde encontraste el objeto';
+                            return 'Indica ubicación exacta del objeto';
                           }
                           return null;
                         },
@@ -548,10 +553,10 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                       ),
                       const SizedBox(height: 16),
                       InkWell(
-                        // onTap: _isLoading ? null : _seleccionarFecha, WIP
+                        onTap: _isLoading ? null : _seleccionarFecha,
                         child: InputDecorator(
                           decoration: const InputDecoration(
-                            labelText: 'Fecha en que lo encontraste *',
+                            labelText: 'Fecha en que lo perdiste/encontraste *',
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.calendar_today_outlined),
                           ),
@@ -577,6 +582,37 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                           return null;
                         },
                         enabled: !_isLoading,
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _estadoEncuentro,
+                        decoration: const InputDecoration(
+                          labelText: 'Estado del objeto *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.check_circle_outline),
+                        ),
+                        items: _estadosEncuentro.map((estadoEncuentro) {
+                          return DropdownMenuItem(
+                            value: estadoEncuentro,
+                            child: Text(
+                              estadoEncuentro,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: _isLoading
+                            ? null
+                            : (value) {
+                          setState(() {
+                            _estadoEncuentro = value;
+                          });
+                        },
+                        validator: (value) {
+                          if (value == null) {
+                            return 'Selecciona el estado del objeto';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 24),
                       SizedBox(
