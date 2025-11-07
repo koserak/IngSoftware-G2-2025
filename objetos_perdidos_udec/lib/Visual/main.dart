@@ -13,10 +13,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Objetos Perdidos UdeC',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const MainScreen(),
     );
   }
@@ -32,6 +29,11 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final List<Objeto> _objetos = [];
+  String _busqueda = '';
+  String? _filtroFacultad;
+  String? _filtroCategoria;
+  String? _filtroEstado;
+  String? _filtroVerificado;
 
   void _mostrarDialogoReportarObjeto() {
     showDialog(
@@ -45,7 +47,9 @@ class _MainScreenState extends State<MainScreen> {
             });
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('¡Objeto reportado exitosamente! Gracias por ayudar.'),
+                content: Text(
+                  '¡Objeto reportado exitosamente! Gracias por ayudar.',
+                ),
                 backgroundColor: Colors.green,
                 duration: Duration(seconds: 3),
               ),
@@ -74,168 +78,195 @@ class _MainScreenState extends State<MainScreen> {
       ),
       body: _objetos.isEmpty
           ? Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_off,
-              size: 80,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No hay objetos reportados aún',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '¿Encontraste algo? ¿Perdiste algo? Repórtalo aquí',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
-              ),
-            ),
-          ],
-        ),
-      )
-          : ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _objetos.length,
-        itemBuilder: (context, index) {
-          final objeto = _objetos[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            elevation: 2,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.inventory_2_outlined,
-                          color: Colors.blue[700],
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              objeto.nombreObjeto,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            // verifica si objeto es encontrado o perdido
-                            objeto.isEncontrado
-                                ? Text(
-                              'Encontrado en ${objeto.lugarEncontrado}',
-                              style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.green),
-                            )
-                                : Text(
-                              'Perdido en ${objeto.lugarEncontrado}',
-                              style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.red
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
+                  Icon(Icons.search_off, size: 80, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
                   Text(
-                    objeto.descripcionObjeto,
-                    style: const TextStyle(fontSize: 14),
+                    'No hay objetos reportados aún',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      Chip(
-                        avatar: const Icon(Icons.category, size: 16),
-                        label: Text(objeto.categoria),
-                        backgroundColor: Colors.purple[50],
-                        labelStyle: TextStyle(
-                          color: Colors.purple[700],
-                          fontSize: 12,
-                        ),
-                      ),
-                      Chip(
-                        avatar: const Icon(Icons.school, size: 16),
-                        label: Text(objeto.facultad),
-                        backgroundColor: Colors.orange[50],
-                        labelStyle: TextStyle(
-                          color: Colors.orange[700],
-                          fontSize: 12,
-                        ),
-                      ),
-                      Chip(
-                        avatar: const Icon(Icons.calendar_today, size: 16),
-                        label: Text(
-                          '${objeto.fechaEncontrado.day}/${objeto.fechaEncontrado.month}/${objeto.fechaEncontrado.year}',
-                        ),
-                        backgroundColor: Colors.green[50],
-                        labelStyle: TextStyle(
-                          color: Colors.green[700],
-                          fontSize: 12,
-                        ),
-                      ),
-                      // Chip para el estado del objeto
-                      Chip(
-                        avatar: const Icon(Icons.check_circle, size: 16),
-                        label: Text(objeto.isEncontrado ? 'Encontrado' : 'Perdido'),
-                        backgroundColor: objeto.isEncontrado ? Colors.green[50] : Colors.red[50],
-                        labelStyle: TextStyle(
-                          color: objeto.isEncontrado ? Colors.green[700] : Colors.red[700],
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Divider(height: 24),
-                  Row(
-                    children: [
-                      Icon(Icons.person_outline,
-                          size: 18,
-                          color: Colors.grey[600]),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Contacto: ${objeto.contacto}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 8),
+                  Text(
+                    '¿Encontraste algo? ¿Perdiste algo? Repórtalo aquí',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                   ),
                 ],
               ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _objetos.length,
+              itemBuilder: (context, index) {
+                final objeto = _objetos[index];
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.blue[50],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.inventory_2_outlined,
+                                color: Colors.blue[700],
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    objeto.nombreObjeto,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  // verifica si objeto es encontrado o perdido
+                                  objeto.isEncontrado
+                                      ? Text(
+                                          'Encontrado en ${objeto.lugarEncontrado}',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.green,
+                                          ),
+                                        )
+                                      : Text(
+                                          'Perdido en ${objeto.lugarEncontrado}',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          objeto.descripcionObjeto,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            Chip(
+                              avatar: const Icon(Icons.category, size: 16),
+                              label: Text(objeto.categoria),
+                              backgroundColor: Colors.purple[50],
+                              labelStyle: TextStyle(
+                                color: Colors.purple[700],
+                                fontSize: 12,
+                              ),
+                            ),
+                            Chip(
+                              avatar: const Icon(Icons.school, size: 16),
+                              label: Text(objeto.facultad),
+                              backgroundColor: Colors.orange[50],
+                              labelStyle: TextStyle(
+                                color: Colors.orange[700],
+                                fontSize: 12,
+                              ),
+                            ),
+                            Chip(
+                              avatar: Icon(
+                                objeto.isVerificado
+                                    ? Icons.check
+                                    : Icons.block_outlined,
+                                size: 16,
+                              ),
+                              label: Text(
+                                objeto.isVerificado
+                                    ? 'Verificado'
+                                    : 'No Verificado',
+                              ),
+                              backgroundColor: objeto.isVerificado
+                                  ? Colors.green[50]
+                                  : Colors.red[50],
+                              labelStyle: TextStyle(
+                                color: objeto.isVerificado
+                                    ? Colors.green[700]
+                                    : Colors.red[700],
+                                fontSize: 12,
+                              ),
+                            ),
+                            Chip(
+                              avatar: const Icon(
+                                Icons.calendar_today,
+                                size: 16,
+                              ),
+                              label: Text(
+                                '${objeto.fechaEncontrado.day}/${objeto.fechaEncontrado.month}/${objeto.fechaEncontrado.year}',
+                              ),
+                              backgroundColor: Colors.green[50],
+                              labelStyle: TextStyle(
+                                color: Colors.green[700],
+                                fontSize: 12,
+                              ),
+                            ),
+                            // Chip para el estado del objeto
+                            Chip(
+                              avatar: const Icon(Icons.check_circle, size: 16),
+                              label: Text(
+                                objeto.isEncontrado ? 'Encontrado' : 'Perdido',
+                              ),
+                              backgroundColor: objeto.isEncontrado
+                                  ? Colors.green[50]
+                                  : Colors.red[50],
+                              labelStyle: TextStyle(
+                                color: objeto.isEncontrado
+                                    ? Colors.green[700]
+                                    : Colors.red[700],
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Divider(height: 24),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.person_outline,
+                              size: 18,
+                              color: Colors.grey[600],
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Contacto: ${objeto.contacto}',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[700],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _mostrarDialogoReportarObjeto,
         icon: const Icon(Icons.add_circle_outline),
@@ -250,10 +281,8 @@ class _MainScreenState extends State<MainScreen> {
 class ReportarObjetoDialog extends StatefulWidget {
   final Function(Objeto) onObjetoReportado;
 
-  const ReportarObjetoDialog({
-    Key? key,
-    required this.onObjetoReportado,
-  }) : super(key: key);
+  const ReportarObjetoDialog({Key? key, required this.onObjetoReportado})
+    : super(key: key);
 
   @override
   State<ReportarObjetoDialog> createState() => _ReportarObjetoDialogState();
@@ -281,7 +310,7 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
     'Libros y Cuadernos',
     'Artículos Deportivos',
     'Joyería',
-    'Otros'
+    'Otros',
   ];
 
   final List<String> _facultades = [
@@ -302,13 +331,10 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
     'Arquitectura, Urbanismo y Geografía',
     'Biblioteca Central',
     'Campus Deportivo',
-    'Otra ubicación'
+    'Otra ubicación',
   ];
 
-  final List<String> _estadosEncuentro = [
-    'Encontrado',
-    'Perdido'
-  ];
+  final List<String> _estadosEncuentro = ['Encontrado', 'Perdido'];
 
   @override
   void dispose() {
@@ -355,8 +381,11 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
         facultad: _facultadSeleccionada!,
         fechaEncontrado: _fechaEncontrado,
         contacto: _contactoController.text.trim(),
-        estadoEncuentro: _estadoEncuentro.toString() == 'Encontrado' ? true : false,
-        estadoVerificacion: false, // al crear una publicación, esta no ha sido verificada
+        estadoEncuentro: _estadoEncuentro.toString() == 'Encontrado'
+            ? true
+            : false,
+        estadoVerificacion:
+            false, // al crear una publicación, esta no ha sido verificada
       );
 
       setState(() {
@@ -373,9 +402,7 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 500, maxHeight: 700),
         child: Column(
@@ -393,7 +420,11 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.report_outlined, color: Colors.blue[700], size: 28),
+                  Icon(
+                    Icons.report_outlined,
+                    color: Colors.blue[700],
+                    size: 28,
+                  ),
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Column(
@@ -408,10 +439,7 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                         ),
                         Text(
                           'Ayuda a alguien a recuperar lo que perdió',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.black54,
-                          ),
+                          style: TextStyle(fontSize: 12, color: Colors.black54),
                         ),
                       ],
                     ),
@@ -492,10 +520,10 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                         onChanged: _isLoading
                             ? null
                             : (value) {
-                          setState(() {
-                            _categoriaSeleccionada = value;
-                          });
-                        },
+                                setState(() {
+                                  _categoriaSeleccionada = value;
+                                });
+                              },
                         validator: (value) {
                           if (value == null) {
                             return 'Selecciona una categoría';
@@ -540,10 +568,10 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                         onChanged: _isLoading
                             ? null
                             : (value) {
-                          setState(() {
-                            _facultadSeleccionada = value;
-                          });
-                        },
+                                setState(() {
+                                  _facultadSeleccionada = value;
+                                });
+                              },
                         validator: (value) {
                           if (value == null) {
                             return 'Selecciona la facultad o ubicación';
@@ -603,10 +631,10 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                         onChanged: _isLoading
                             ? null
                             : (value) {
-                          setState(() {
-                            _estadoEncuentro = value;
-                          });
-                        },
+                                setState(() {
+                                  _estadoEncuentro = value;
+                                });
+                              },
                         validator: (value) {
                           if (value == null) {
                             return 'Selecciona el estado del objeto';
@@ -629,29 +657,29 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                           ),
                           child: _isLoading
                               ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                              AlwaysStoppedAnimation<Color>(
-                                  Colors.white),
-                            ),
-                          )
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
                               : const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.check_circle_outline),
-                              SizedBox(width: 8),
-                              Text(
-                                'Publicar Reporte',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.check_circle_outline),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Publicar Reporte',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
                         ),
                       ),
                     ],
