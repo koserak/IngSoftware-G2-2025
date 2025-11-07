@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Pantalla principal con el botón para reportar objetos
+// Pantalla principal con buscador y filtros
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
 
@@ -32,8 +32,8 @@ class _MainScreenState extends State<MainScreen> {
   String _busqueda = '';
   String? _filtroFacultad;
   String? _filtroCategoria;
-  String? _filtroEstado;
-  String? _filtroVerificado;
+  String? _filtroEstado; // "Perdido" o "Encontrado"
+  String? _filtroVerificado; // "Verificado" o "No Verificado"
 
   void _mostrarDialogoReportarObjeto() {
     showDialog(
@@ -60,50 +60,276 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  List<Objeto> get _objetosFiltrados {
+    return _objetos.where((objeto) {
+      final nombreMatch =
+          objeto.nombreObjeto.toLowerCase().contains(_busqueda.toLowerCase()) ||
+          objeto.descripcionObjeto.toLowerCase().contains(
+            _busqueda.toLowerCase(),
+          );
+
+      final facultadMatch =
+          _filtroFacultad == null || objeto.facultad == _filtroFacultad;
+      final categoriaMatch =
+          _filtroCategoria == null || objeto.categoria == _filtroCategoria;
+      final estadoMatch =
+          _filtroEstado == null ||
+          (_filtroEstado == "Encontrado" && objeto.isEncontrado) ||
+          (_filtroEstado == "Perdido" && !objeto.isEncontrado);
+      final verificadoMatch =
+          _filtroVerificado == null ||
+          (_filtroVerificado == "Verificado" && objeto.isVerificado) ||
+          (_filtroVerificado == "No Verificado" && !objeto.isVerificado);
+
+      return nombreMatch &&
+          facultadMatch &&
+          categoriaMatch &&
+          estadoMatch &&
+          verificadoMatch;
+    }).toList();
+  }
+
+  void _mostrarFiltros() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        // Mostrar todos los tipos posibles aunque no haya objetos
+        final categorias = [
+          'Electrónicos',
+          'Documentos',
+          'Ropa y Accesorios',
+          'Llaves',
+          'Carteras y Bolsos',
+          'Libros y Cuadernos',
+          'Artículos Deportivos',
+          'Joyería',
+          'Otros',
+        ];
+
+        final facultades = [
+          'Ciencias Físicas y Matemáticas',
+          'Ingeniería',
+          'Ciencias Químicas',
+          'Ciencias Naturales y Oceanográficas',
+          'Medicina',
+          'Odontología',
+          'Farmacia',
+          'Ciencias Veterinarias y Pecuarias',
+          'Ciencias Forestales',
+          'Ciencias Económicas y Administrativas',
+          'Ciencias Jurídicas y Sociales',
+          'Humanidades y Arte',
+          'Educación',
+          'Ciencias Sociales',
+          'Arquitectura, Urbanismo y Geografía',
+          'Biblioteca Central',
+          'Campus Deportivo',
+          'Otra ubicación',
+        ];
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Center(
+                      child: Text(
+                        'Filtros de búsqueda',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Facultad
+                    DropdownButtonFormField<String>(
+                      value: _filtroFacultad,
+                      decoration: const InputDecoration(
+                        labelText: 'Filtrar por Facultad',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.school_outlined),
+                      ),
+                      items: facultades
+                          .map(
+                            (fac) =>
+                                DropdownMenuItem(value: fac, child: Text(fac)),
+                          )
+                          .toList(),
+                      onChanged: (value) =>
+                          setModalState(() => _filtroFacultad = value),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Categoría
+                    DropdownButtonFormField<String>(
+                      value: _filtroCategoria,
+                      decoration: const InputDecoration(
+                        labelText: 'Filtrar por Categoría',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.category_outlined),
+                      ),
+                      items: categorias
+                          .map(
+                            (cat) =>
+                                DropdownMenuItem(value: cat, child: Text(cat)),
+                          )
+                          .toList(),
+                      onChanged: (value) =>
+                          setModalState(() => _filtroCategoria = value),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Estado (Encontrado o Perdido)
+                    DropdownButtonFormField<String>(
+                      value: _filtroEstado,
+                      decoration: const InputDecoration(
+                        labelText: 'Estado del objeto',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.info_outline),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: "Encontrado",
+                          child: Text("Encontrado"),
+                        ),
+                        DropdownMenuItem(
+                          value: "Perdido",
+                          child: Text("Perdido"),
+                        ),
+                      ],
+                      onChanged: (value) =>
+                          setModalState(() => _filtroEstado = value),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Verificado
+                    DropdownButtonFormField<String>(
+                      value: _filtroVerificado,
+                      decoration: const InputDecoration(
+                        labelText: 'Verificación',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.verified_outlined),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: "Verificado",
+                          child: Text("Verificado"),
+                        ),
+                        DropdownMenuItem(
+                          value: "No Verificado",
+                          child: Text("No Verificado"),
+                        ),
+                      ],
+                      onChanged: (value) =>
+                          setModalState(() => _filtroVerificado = value),
+                    ),
+
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.filter_alt_off),
+                            label: const Text('Limpiar filtros'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey[300],
+                              foregroundColor: Colors.black,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _filtroFacultad = null;
+                                _filtroCategoria = null;
+                                _filtroEstado = null;
+                                _filtroVerificado = null;
+                              });
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.check_circle),
+                            label: const Text('Aplicar'),
+                            onPressed: () {
+                              setState(() {});
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final objetosFiltrados = _objetosFiltrados;
+
     return Scaffold(
       appBar: AppBar(
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Objetos Perdidos', style: TextStyle(fontSize: 20)),
-            Text(
-              'Universidad de Concepción',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
-            ),
+            Text('Universidad de Concepción', style: TextStyle(fontSize: 12)),
           ],
         ),
         elevation: 2,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list_alt),
+            onPressed: _objetos.isEmpty ? null : _mostrarFiltros,
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Buscar por nombre o descripción...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              onChanged: (value) => setState(() => _busqueda = value),
+            ),
+          ),
+        ),
       ),
-      body: _objetos.isEmpty
+      body: objetosFiltrados.isEmpty
           ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.search_off, size: 80, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No hay objetos reportados aún',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '¿Encontraste algo? ¿Perdiste algo? Repórtalo aquí',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                  ),
-                ],
+              child: Text(
+                _objetos.isEmpty
+                    ? 'No hay objetos reportados aún'
+                    : 'No se encontraron coincidencias',
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
             )
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: _objetos.length,
+              itemCount: objetosFiltrados.length,
               itemBuilder: (context, index) {
-                final objeto = _objetos[index];
+                final objeto = objetosFiltrados[index];
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   elevation: 2,
@@ -139,7 +365,6 @@ class _MainScreenState extends State<MainScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  // verifica si objeto es encontrado o perdido
                                   objeto.isEncontrado
                                       ? Text(
                                           'Encontrado en ${objeto.lugarEncontrado}',
@@ -161,14 +386,10 @@ class _MainScreenState extends State<MainScreen> {
                           ],
                         ),
                         const SizedBox(height: 12),
-                        Text(
-                          objeto.descripcionObjeto,
-                          style: const TextStyle(fontSize: 14),
-                        ),
+                        Text(objeto.descripcionObjeto),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 8,
-                          runSpacing: 8,
                           children: [
                             Chip(
                               avatar: const Icon(Icons.category, size: 16),
@@ -238,25 +459,6 @@ class _MainScreenState extends State<MainScreen> {
                                     ? Colors.green[700]
                                     : Colors.red[700],
                                 fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Divider(height: 24),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.person_outline,
-                              size: 18,
-                              color: Colors.grey[600],
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Contacto: ${objeto.contacto}',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey[700],
-                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
