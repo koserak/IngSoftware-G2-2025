@@ -390,36 +390,36 @@ class _MainScreenState extends State<MainScreen> {
                         const SizedBox(height: 12),
                         Text(objeto.descripcionObjeto),
                        if (objeto.lat != null && objeto.long != null)
-  SizedBox(
-    height: 300,
-    width: 300,
-    child: FlutterMap(
-      options: MapOptions(
-        initialCenter: LatLng(objeto.lat!, objeto.long!),
-        initialZoom: 16,
-      ),
-      children: [
-        TileLayer(
-          urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-        ),
-        MarkerLayer(
-          markers: [
-            Marker(
-  width: 40,
-  height: 40,
-  point: LatLng(objeto.lat!, objeto.long!),
-  child: const Icon(
-    Icons.location_on,
-    color: Colors.red,
-    size: 30,
-  ),
-),
+                      SizedBox(
+                        height: 300,
+                        width: 300,
+                        child: FlutterMap(
+                          options: MapOptions(
+                            initialCenter: LatLng(objeto.lat!, objeto.long!),
+                            initialZoom: 16,
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                            ),
+                            MarkerLayer(
+                              markers: [
+                                Marker(
+                      width: 40,
+                      height: 40,
+                      point: LatLng(objeto.lat!, objeto.long!),
+                      child: const Icon(
+                        Icons.location_on,
+                        color: Colors.red,
+                        size: 30,
+                      ),
+                    ),
 
-          ],
-        ),
-      ],
-    ),
-  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
 
 
                         Wrap(
