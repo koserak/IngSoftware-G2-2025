@@ -10,7 +10,8 @@ class Objeto{
   final DateTime fechaEncontrado;
   final bool estadoEncuentro;
   final bool estadoVerificacion;
-
+  final double? lat;
+  final double? long;
 
   Objeto({
     required this.idObjeto,
@@ -23,6 +24,8 @@ class Objeto{
     required this.fechaEncontrado,
     required this.estadoEncuentro,
     required this.estadoVerificacion,
+    this.lat,
+    this.long,
   });
 
   String get getIdObjeto => idObjeto;
