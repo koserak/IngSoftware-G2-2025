@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:objetos_perdidos_udec/Visual/elegirubicacionscreen.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../Modelo/Objeto.dart';
 
 void main() {
@@ -387,7 +389,39 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(objeto.descripcionObjeto),
-                        const SizedBox(height: 12),
+                       if (objeto.lat != null && objeto.long != null)
+                      SizedBox(
+                        height: 300,
+                        width: 300,
+                        child: FlutterMap(
+                          options: MapOptions(
+                            initialCenter: LatLng(objeto.lat!, objeto.long!),
+                            initialZoom: 16,
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                            ),
+                            MarkerLayer(
+                              markers: [
+                                Marker(
+                      width: 40,
+                      height: 40,
+                      point: LatLng(objeto.lat!, objeto.long!),
+                      child: const Icon(
+                        Icons.location_on,
+                        color: Colors.red,
+                        size: 30,
+                      ),
+                    ),
+
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+
                         Wrap(
                           spacing: 8,
                           children: [
@@ -502,6 +536,8 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
   String? _estadoEncuentro;
   DateTime _fechaEncontrado = DateTime.now();
   bool _isLoading = false;
+  double? selectedLat;
+  double? selectedLng;
 
   final List<String> _categorias = [
     'Electrónicos',
@@ -588,6 +624,8 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
             : false,
         estadoVerificacion:
             false, // al crear una publicación, esta no ha sido verificada
+        lat: selectedLat,
+        long: selectedLng,
       );
 
       setState(() {
@@ -751,6 +789,37 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                         enabled: !_isLoading,
                       ),
                       const SizedBox(height: 16),
+
+                      ElevatedButton.icon(
+                      icon: const Icon(Icons.map_outlined),
+                      label: const Text("Elegir ubicación en el mapa"),
+                      onPressed: _isLoading
+                          ? null
+                          : () async {
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ElegirUbicacionScreen(),
+                                ),
+                              );
+                              if (result != null) {
+                                setState(() {
+                                  selectedLat = result['lat'];
+                                  selectedLng = result['lng'];
+                                });
+                              }
+                            },
+                    ),
+                    if (selectedLat != null && selectedLng != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          "Ubicación seleccionada: ${selectedLat!.toStringAsFixed(5)}, ${selectedLng!.toStringAsFixed(5)}",
+                          style: const TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+
                       DropdownButtonFormField<String>(
                         value: _facultadSeleccionada,
                         decoration: const InputDecoration(
