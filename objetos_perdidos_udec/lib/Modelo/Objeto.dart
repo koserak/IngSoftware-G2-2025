@@ -1,4 +1,5 @@
 // Modelo de datos para un objeto encontrado/perdido
+import 'package:image_picker/image_picker.dart';
 class Objeto{
   final String idObjeto;
   final String nombreObjeto;
@@ -12,6 +13,7 @@ class Objeto{
   final bool estadoVerificacion;
   final double? lat;
   final double? long;
+  final XFile? imagen;
 
   Objeto({
     required this.idObjeto,
@@ -26,6 +28,7 @@ class Objeto{
     required this.estadoVerificacion,
     this.lat,
     this.long,
+    this.imagen,
   });
 
   String get getIdObjeto => idObjeto;
