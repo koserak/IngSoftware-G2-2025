@@ -3,13 +3,15 @@ import 'package:objetos_perdidos_udec/Visual/elegirubicacionscreen.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../Modelo/Objeto.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -23,7 +25,7 @@ class MyApp extends StatelessWidget {
 
 // Pantalla principal con buscador y filtros
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -153,7 +155,7 @@ class _MainScreenState extends State<MainScreen> {
 
                     // Facultad
                     DropdownButtonFormField<String>(
-                      value: _filtroFacultad,
+                      initialValue: _filtroFacultad,
                       decoration: const InputDecoration(
                         labelText: 'Filtrar por Facultad',
                         border: OutlineInputBorder(),
@@ -172,7 +174,7 @@ class _MainScreenState extends State<MainScreen> {
 
                     // Categoría
                     DropdownButtonFormField<String>(
-                      value: _filtroCategoria,
+                      initialValue: _filtroCategoria,
                       decoration: const InputDecoration(
                         labelText: 'Filtrar por Categoría',
                         border: OutlineInputBorder(),
@@ -191,7 +193,7 @@ class _MainScreenState extends State<MainScreen> {
 
                     // Estado (Encontrado o Perdido)
                     DropdownButtonFormField<String>(
-                      value: _filtroEstado,
+                      initialValue: _filtroEstado,
                       decoration: const InputDecoration(
                         labelText: 'Estado del objeto',
                         border: OutlineInputBorder(),
@@ -214,7 +216,7 @@ class _MainScreenState extends State<MainScreen> {
 
                     // Verificado
                     DropdownButtonFormField<String>(
-                      value: _filtroVerificado,
+                      initialValue: _filtroVerificado,
                       decoration: const InputDecoration(
                         labelText: 'Verificación',
                         border: OutlineInputBorder(),
@@ -389,6 +391,54 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(objeto.descripcionObjeto),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        if (objeto.imagen != null)
+                          SizedBox(
+                            height: 300,
+                            width: 300,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Container(
+                                constraints: const BoxConstraints(maxHeight: 300),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey.shade300),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: FutureBuilder<Uint8List>(
+                                    future: objeto.imagen!.readAsBytes(),
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState == ConnectionState.waiting) {
+                                        return const SizedBox(
+                                          height: 150,
+                                          child: Center(child: CircularProgressIndicator()),
+                                        );
+                                      }
+                                      if (snapshot.hasError) {
+                                        return const SizedBox(
+                                          height: 150,
+                                          child: Center(
+                                            child: Icon(Icons.error, color: Colors.red),
+                                          ),
+                                        );
+                                      }
+                                      if (snapshot.hasData) {
+                                        return Image.memory(
+                                          snapshot.data!,
+                                          width: double.infinity,
+                                          fit: BoxFit.contain,
+                                        );
+                                      }
+                                      return const SizedBox.shrink();
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                        if (objeto.lat != null && objeto.long != null)
                       SizedBox(
                         height: 300,
@@ -423,6 +473,8 @@ class _MainScreenState extends State<MainScreen> {
                           ],
                         ),
                       ),
+                          ],
+                        ),
 
 
                         Wrap(
@@ -520,8 +572,7 @@ class _MainScreenState extends State<MainScreen> {
 class ReportarObjetoDialog extends StatefulWidget {
   final Function(Objeto) onObjetoReportado;
 
-  const ReportarObjetoDialog({Key? key, required this.onObjetoReportado})
-    : super(key: key);
+  const ReportarObjetoDialog({super.key, required this.onObjetoReportado});
 
   @override
   State<ReportarObjetoDialog> createState() => _ReportarObjetoDialogState();
@@ -541,6 +592,7 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
   bool _isLoading = false;
   double? selectedLat;
   double? selectedLng;
+  XFile? _imagenSeleccionada;
 
   final List<String> _categorias = [
     'Electrónicos',
@@ -576,6 +628,8 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
   ];
 
   final List<String> _estadosEncuentro = ['Encontrado', 'Perdido'];
+  
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void dispose() {
@@ -629,6 +683,7 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
             false, // al crear una publicación, esta no ha sido verificada
         lat: selectedLat,
         long: selectedLng,
+        imagen: _imagenSeleccionada,
       );
 
       setState(() {
@@ -642,6 +697,28 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
     }
   }
 
+Future<void> _seleccionarImagen() async {
+  try {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      final mimeType = pickedFile.mimeType;
+      
+      if (mimeType == 'image/png' || mimeType == 'image/jpeg') {
+        setState(() {
+          _imagenSeleccionada = pickedFile; // ✅ Asignar directamente, sin XFile()
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Solo se permiten imágenes PNG o JPG')),
+        );
+      }
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error al seleccionar imagen: $e')),
+    );
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -748,7 +825,7 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        value: _categoriaSeleccionada,
+                        initialValue: _categoriaSeleccionada,
                         decoration: const InputDecoration(
                           labelText: 'Categoría *',
                           border: OutlineInputBorder(),
@@ -822,9 +899,46 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                         ),
                       ),
                     const SizedBox(height: 16),
+                    ElevatedButton.icon(
+                    icon: const Icon(Icons.image_outlined),
+                    label: const Text('Subir Imagen (PNG/JPG)'),
+                    onPressed: _isLoading ? null : _seleccionarImagen,
+                  ),
+                    if (_imagenSeleccionada != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: FutureBuilder<Uint8List>(
+                          future: _imagenSeleccionada!.readAsBytes(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return const SizedBox(
+                                height: 150,
+                                child: Center(child: CircularProgressIndicator()),
+                              );
+                            }
+                            if (snapshot.hasError) {
+                              return const SizedBox(
+                                height: 150,
+                                child: Center(
+                                  child: Icon(Icons.error, color: Colors.red),
+                                ),
+                              );
+                            }
+                            if (snapshot.hasData) {
+                              return Image.memory(
+                                snapshot.data!,
+                                height: 150,
+                                width: double.infinity,
+                                fit: BoxFit.contain,
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                      ),
 
                       DropdownButtonFormField<String>(
-                        value: _facultadSeleccionada,
+                        initialValue: _facultadSeleccionada,
                         decoration: const InputDecoration(
                           labelText: 'Facultad o ubicación UdeC *',
                           border: OutlineInputBorder(),
@@ -887,7 +1001,7 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                       ),
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
-                        value: _estadoEncuentro,
+                        initialValue: _estadoEncuentro,
                         decoration: const InputDecoration(
                           labelText: 'Estado del objeto *',
                           border: OutlineInputBorder(),
