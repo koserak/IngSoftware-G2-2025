@@ -3,7 +3,7 @@ import 'package:objetos_perdidos_udec/Visual/elegirubicacionscreen.dart';
 import 'package:objetos_perdidos_udec/Visual/puntos_acopio_screen.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import '../Modelo/Objeto.dart';
+import 'package:objetos_perdidos_udec/Modelo/Objeto.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 
