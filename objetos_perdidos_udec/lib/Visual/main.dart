@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:objetos_perdidos_udec/Visual/elegirubicacionscreen.dart';
+import 'package:objetos_perdidos_udec/Visual/puntos_acopio_screen.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../Modelo/Objeto.dart';
@@ -320,6 +321,90 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ),
       ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.blue[700]!, Colors.blue[500]!],
+                ),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(Icons.school, color: Colors.white, size: 48),
+                  SizedBox(height: 12),
+                  Text(
+                    'Objetos Perdidos',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'UdeC',
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home_outlined, color: Colors.blue),
+              title: const Text('Inicio'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.location_on_outlined,
+                color: Colors.blue,
+              ),
+              title: const Text('Puntos de Acopio'),
+              subtitle: const Text('Ver ubicaciones disponibles'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PuntosAcopioScreen(),
+                  ),
+                );
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.info_outline, color: Colors.grey),
+              title: const Text('Acerca de'),
+              onTap: () {
+                Navigator.pop(context);
+                showAboutDialog(
+                  context: context,
+                  applicationName: 'Objetos Perdidos UdeC',
+                  applicationVersion: '1.0.0',
+                  applicationIcon: const Icon(
+                    Icons.school,
+                    size: 48,
+                    color: Colors.blue,
+                  ),
+                  children: const [
+                    Text(
+                      'Aplicación para gestionar objetos perdidos y encontrados en la Universidad de Concepción.',
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
       body: objetosFiltrados.isEmpty
           ? Center(
               child: Text(
@@ -391,91 +476,44 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(objeto.descripcionObjeto),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                        if (objeto.imagen != null)
+                        if (objeto.lat != null && objeto.long != null)
                           SizedBox(
                             height: 300,
                             width: 300,
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Container(
-                                constraints: const BoxConstraints(maxHeight: 300),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey.shade300),
-                                  borderRadius: BorderRadius.circular(8),
+                            child: FlutterMap(
+                              options: MapOptions(
+                                initialCenter: LatLng(
+                                  objeto.lat!,
+                                  objeto.long!,
                                 ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: FutureBuilder<Uint8List>(
-                                    future: objeto.imagen!.readAsBytes(),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.connectionState == ConnectionState.waiting) {
-                                        return const SizedBox(
-                                          height: 150,
-                                          child: Center(child: CircularProgressIndicator()),
-                                        );
-                                      }
-                                      if (snapshot.hasError) {
-                                        return const SizedBox(
-                                          height: 150,
-                                          child: Center(
-                                            child: Icon(Icons.error, color: Colors.red),
-                                          ),
-                                        );
-                                      }
-                                      if (snapshot.hasData) {
-                                        return Image.memory(
-                                          snapshot.data!,
-                                          width: double.infinity,
-                                          fit: BoxFit.contain,
-                                        );
-                                      }
-                                      return const SizedBox.shrink();
-                                    },
-                                  ),
-                                ),
+                                initialZoom: 16,
                               ),
-                            ),
-                          ),
-                       if (objeto.lat != null && objeto.long != null)
-                      SizedBox(
-                        height: 300,
-                        width: 300,
-                        child: FlutterMap(
-                          options: MapOptions(
-                            initialCenter: LatLng(objeto.lat!, objeto.long!),
-                            initialZoom: 16,
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate: "https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png?api_key={apiKey}",
-                              additionalOptions: const{
-                                'apiKey' : '20aba97e-7b65-437d-8f1e-a9d91a8ff2df'
-                              },
-                            ),
-                            MarkerLayer(
-                              markers: [
-                                Marker(
-                      width: 40,
-                      height: 40,
-                      point: LatLng(objeto.lat!, objeto.long!),
-                      child: const Icon(
-                        Icons.location_on,
-                        color: Colors.red,
-                        size: 30,
-                      ),
-                    ),
-
+                              children: [
+                                TileLayer(
+                                  urlTemplate:
+                                      "https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png?api_key={apiKey}",
+                                  additionalOptions: const {
+                                    'apiKey':
+                                        '20aba97e-7b65-437d-8f1e-a9d91a8ff2df',
+                                  },
+                                ),
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      width: 40,
+                                      height: 40,
+                                      point: LatLng(objeto.lat!, objeto.long!),
+                                      child: const Icon(
+                                        Icons.location_on,
+                                        color: Colors.red,
+                                        size: 30,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
-                          ],
-                        ),
-
+                          ),
 
                         Wrap(
                           spacing: 8,
@@ -871,71 +909,35 @@ Future<void> _seleccionarImagen() async {
                       const SizedBox(height: 16),
 
                       ElevatedButton.icon(
-                      icon: const Icon(Icons.map_outlined),
-                      label: const Text("Elegir ubicación en el mapa"),
-                      onPressed: _isLoading
-                          ? null
-                          : () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const ElegirUbicacionScreen(),
-                                ),
-                              );
-                              if (result != null) {
-                                setState(() {
-                                  selectedLat = result['lat'];
-                                  selectedLng = result['lng'];
-                                });
-                              }
-                            },
-                    ),
-                    if (selectedLat != null && selectedLng != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          "Ubicación seleccionada: ${selectedLat!.toStringAsFixed(5)}, ${selectedLng!.toStringAsFixed(5)}",
-                          style: const TextStyle(color: Colors.grey),
-                        ),
+                        icon: const Icon(Icons.map_outlined),
+                        label: const Text("Elegir ubicación en el mapa"),
+                        onPressed: _isLoading
+                            ? null
+                            : () async {
+                                final result = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const ElegirUbicacionScreen(),
+                                  ),
+                                );
+                                if (result != null) {
+                                  setState(() {
+                                    selectedLat = result['lat'];
+                                    selectedLng = result['lng'];
+                                  });
+                                }
+                              },
                       ),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                    icon: const Icon(Icons.image_outlined),
-                    label: const Text('Subir Imagen (PNG/JPG)'),
-                    onPressed: _isLoading ? null : _seleccionarImagen,
-                  ),
-                    if (_imagenSeleccionada != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: FutureBuilder<Uint8List>(
-                          future: _imagenSeleccionada!.readAsBytes(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const SizedBox(
-                                height: 150,
-                                child: Center(child: CircularProgressIndicator()),
-                              );
-                            }
-                            if (snapshot.hasError) {
-                              return const SizedBox(
-                                height: 150,
-                                child: Center(
-                                  child: Icon(Icons.error, color: Colors.red),
-                                ),
-                              );
-                            }
-                            if (snapshot.hasData) {
-                              return Image.memory(
-                                snapshot.data!,
-                                height: 150,
-                                width: double.infinity,
-                                fit: BoxFit.contain,
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
+                      if (selectedLat != null && selectedLng != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            "Ubicación seleccionada: ${selectedLat!.toStringAsFixed(5)}, ${selectedLng!.toStringAsFixed(5)}",
+                            style: const TextStyle(color: Colors.grey),
+                          ),
                         ),
-                      ),
+                      const SizedBox(height: 16),
 
                       DropdownButtonFormField<String>(
                         initialValue: _facultadSeleccionada,
