@@ -20,8 +20,8 @@ sentando las bases técnicas y de diseño necesarias para futuras expansiones de
 
 ## Visión Sprint 2:
 
-Implementar un nuevo rol, administrador/moderador, encargado de asegurar la seguridad de la plataforma. 
-Esto se logrará implementando sistemas de verificación para las publicaciones y mecanismos de moderación
-de los que estarán encargados los usuarios de tipo administrador/moderador. Con el fin de crear un entorno seguro
-para los usuarios de la plataforma, que no se preste para engaños o amanezas a su integridad.
+Se termina de construir la versión mínima viable, implementando un sistema de "match", que permite conectar un objeto perdido con su dueño.
+Se implementa un nuevo rol, administrador/moderador, encargado de verificar las publicaciones y su autenticidad.
+Este también actúa como mediador en la entrega de objetos perdidos realizada por usuarios, lo que permite mitigar el riesgo de estafas y asegurar
+la veracidad de las publicaciones, reforzando el sentido de confianza de los usuarios. Se refuerza el apartado visual.
 

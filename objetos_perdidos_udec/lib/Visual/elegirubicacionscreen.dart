@@ -28,7 +28,10 @@ class _ElegirUbicacionScreenState extends State<ElegirUbicacionScreen> {
         ),
         children: [
           TileLayer(
-            urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            urlTemplate: "https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png?api_key={apiKey}",
+            additionalOptions: const{
+              'apiKey' : '20aba97e-7b65-437d-8f1e-a9d91a8ff2df'
+            },
             userAgentPackageName: 'com.example.app',
           ),
           if (_punto != null)
