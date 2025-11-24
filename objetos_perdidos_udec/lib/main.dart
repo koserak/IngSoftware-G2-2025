@@ -476,44 +476,108 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(objeto.descripcionObjeto),
-                        if (objeto.lat != null && objeto.long != null)
-                          SizedBox(
-                            height: 300,
-                            width: 300,
-                            child: FlutterMap(
-                              options: MapOptions(
-                                initialCenter: LatLng(
-                                  objeto.lat!,
-                                  objeto.long!,
-                                ),
-                                initialZoom: 16,
-                              ),
-                              children: [
-                                TileLayer(
-                                  urlTemplate:
-                                      "https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png?api_key={apiKey}",
-                                  additionalOptions: const {
-                                    'apiKey':
-                                        '20aba97e-7b65-437d-8f1e-a9d91a8ff2df',
-                                  },
-                                ),
-                                MarkerLayer(
-                                  markers: [
-                                    Marker(
-                                      width: 40,
-                                      height: 40,
-                                      point: LatLng(objeto.lat!, objeto.long!),
-                                      child: const Icon(
-                                        Icons.location_on,
-                                        color: Colors.red,
-                                        size: 30,
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (objeto.imagen != null)
+                              SizedBox(
+                                height: 300,
+                                width: 300,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Container(
+                                    constraints: const BoxConstraints(
+                                      maxHeight: 300,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.grey.shade300,
                                       ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: FutureBuilder<Uint8List>(
+                                        future: objeto.imagen!.readAsBytes(),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return const SizedBox(
+                                              height: 150,
+                                              child: Center(
+                                                child:
+                                                    CircularProgressIndicator(),
+                                              ),
+                                            );
+                                          }
+                                          if (snapshot.hasError) {
+                                            return const SizedBox(
+                                              height: 150,
+                                              child: Center(
+                                                child: Icon(
+                                                  Icons.error,
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                          if (snapshot.hasData) {
+                                            return Image.memory(
+                                              snapshot.data!,
+                                              width: double.infinity,
+                                              fit: BoxFit.contain,
+                                            );
+                                          }
+                                          return const SizedBox.shrink();
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            if (objeto.lat != null && objeto.long != null)
+                              SizedBox(
+                                height: 300,
+                                width: 300,
+                                child: FlutterMap(
+                                  options: MapOptions(
+                                    initialCenter: LatLng(
+                                      objeto.lat!,
+                                      objeto.long!,
+                                    ),
+                                    initialZoom: 16,
+                                  ),
+                                  children: [
+                                    TileLayer(
+                                      urlTemplate:
+                                          "https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png?api_key={apiKey}",
+                                      additionalOptions: const {
+                                        'apiKey':
+                                            '20aba97e-7b65-437d-8f1e-a9d91a8ff2df',
+                                      },
+                                    ),
+                                    MarkerLayer(
+                                      markers: [
+                                        Marker(
+                                          width: 40,
+                                          height: 40,
+                                          point: LatLng(
+                                            objeto.lat!,
+                                            objeto.long!,
+                                          ),
+                                          child: const Icon(
+                                            Icons.location_on,
+                                            color: Colors.red,
+                                            size: 30,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                          ),
+                              ),
+                          ],
+                        ),
 
                         Wrap(
                           spacing: 8,
@@ -666,7 +730,7 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
   ];
 
   final List<String> _estadosEncuentro = ['Encontrado', 'Perdido'];
-  
+
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -735,28 +799,34 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
     }
   }
 
-Future<void> _seleccionarImagen() async {
-  try {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      final mimeType = pickedFile.mimeType;
-      
-      if (mimeType == 'image/png' || mimeType == 'image/jpeg') {
-        setState(() {
-          _imagenSeleccionada = pickedFile; // ✅ Asignar directamente, sin XFile()
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Solo se permiten imágenes PNG o JPG')),
-        );
+  Future<void> _seleccionarImagen() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+      );
+      if (pickedFile != null) {
+        final mimeType = pickedFile.mimeType;
+
+        if (mimeType == 'image/png' || mimeType == 'image/jpeg') {
+          setState(() {
+            _imagenSeleccionada =
+                pickedFile; // ✅ Asignar directamente, sin XFile()
+          });
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Solo se permiten imágenes PNG o JPG'),
+            ),
+          );
+        }
       }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al seleccionar imagen: $e')),
+      );
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error al seleccionar imagen: $e')),
-    );
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -938,6 +1008,46 @@ Future<void> _seleccionarImagen() async {
                           ),
                         ),
                       const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.image_outlined),
+                        label: const Text('Subir Imagen (PNG/JPG)'),
+                        onPressed: _isLoading ? null : _seleccionarImagen,
+                      ),
+                      if (_imagenSeleccionada != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: FutureBuilder<Uint8List>(
+                            future: _imagenSeleccionada!.readAsBytes(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const SizedBox(
+                                  height: 150,
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              }
+                              if (snapshot.hasError) {
+                                return const SizedBox(
+                                  height: 150,
+                                  child: Center(
+                                    child: Icon(Icons.error, color: Colors.red),
+                                  ),
+                                );
+                              }
+                              if (snapshot.hasData) {
+                                return Image.memory(
+                                  snapshot.data!,
+                                  height: 150,
+                                  width: double.infinity,
+                                  fit: BoxFit.contain,
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ),
 
                       DropdownButtonFormField<String>(
                         initialValue: _facultadSeleccionada,
