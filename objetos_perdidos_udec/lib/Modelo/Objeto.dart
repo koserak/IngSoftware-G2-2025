@@ -11,6 +11,7 @@ class Objeto {
   final DateTime fechaEncontrado;
   final bool estadoEncuentro;
   final bool estadoVerificacion;
+  final bool isResuelto;
   final double? lat;
   final double? long;
   final XFile? imagen;
@@ -26,6 +27,7 @@ class Objeto {
     required this.fechaEncontrado,
     required this.estadoEncuentro,
     required this.estadoVerificacion,
+    this.isResuelto = false,
     this.lat,
     this.long,
     this.imagen,
@@ -35,6 +37,7 @@ class Objeto {
   String get getDescripcionObjeto => descripcionObjeto;
   bool get isEncontrado => estadoEncuentro;
   bool get isVerificado => estadoVerificacion;
+  bool get estaResuelto => isResuelto;
   String get getCategoria => categoria;
   String get getLugarEncontrado => lugarEncontrado;
 
@@ -51,7 +54,7 @@ class Objeto {
       'fechaEncontrado': fechaEncontrado.toIso8601String(), // Guardamos fecha como texto
       'estadoEncuentro': estadoEncuentro,
       'estadoVerificacion': estadoVerificacion,
-      'lat': lat,
+      'isResuelto': isResuelto,
       'long': long,
       'imagenPath': imagen?.path, // Guardamos solo la ruta de la imagen
     };
@@ -70,6 +73,7 @@ class Objeto {
       fechaEncontrado: DateTime.parse(json['fechaEncontrado']),
       estadoEncuentro: json['estadoEncuentro'],
       estadoVerificacion: json['estadoVerificacion'],
+      isResuelto: json['isResuelto'] ?? false,
       lat: json['lat'],
       long: json['long'],
       // Si hay ruta, creamos el XFile, si no, es null
