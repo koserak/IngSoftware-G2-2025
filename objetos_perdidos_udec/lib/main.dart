@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 import 'package:objetos_perdidos_udec/Visual/adminscreen.dart';
 import 'package:objetos_perdidos_udec/Modelo/Almacenamiento.dart';
+import 'package:objetos_perdidos_udec/Visual/match_dialog.dart';
+import 'package:objetos_perdidos_udec/Visual/admin_matches_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -194,6 +196,7 @@ class _MainScreenState extends State<MainScreen> {
 
   List<Objeto> get _objetosFiltrados {
     return _objetos.where((objeto) {
+      if (objeto.isResuelto) return false; //IMPORTANTE: Ocultar resueltos, dejar como comentario para mostrarlos
       final nombreMatch =
           objeto.nombreObjeto.toLowerCase().contains(_busqueda.toLowerCase()) ||
           objeto.descripcionObjeto.toLowerCase().contains(
@@ -565,6 +568,20 @@ class _MainScreenState extends State<MainScreen> {
                 }
               },
             ),
+            if (admin) 
+              ListTile(
+                leading: const Icon(Icons.favorite_border, color: Colors.pink),
+                title: const Text('Emparejamientos Pendientes'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminMatchesScreen()),
+                  );                      
+                  // Al volver, recargamos los datos por si se aprobó alguno
+                   _cargarDatosLocales();
+                },
+              ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.info_outline, color: Colors.grey),
@@ -860,6 +877,31 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           ],
+                        ),
+                        // Justo después del Wrap de los Chips, dentro del Column del Card
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity, // Botón ancho completo
+                          child: ElevatedButton.icon(
+                            icon: Icon(
+                              objeto.isEncontrado ? Icons.pan_tool : Icons.volunteer_activism, 
+                              color: Colors.white
+                            ),
+                            label: Text(
+                              objeto.isEncontrado ? "¡Soy el dueño!" : "¡Tengo el objeto!",
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                               backgroundColor: objeto.isEncontrado ? Colors.orange : Colors.indigo,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => MatchDialog(objeto: objeto),
+                              );
+                            },
+                          ),
                         ),
                       ],
                     ),
