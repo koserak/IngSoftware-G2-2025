@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:objetos_perdidos_udec/Modelo/Objeto.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
+import 'package:objetos_perdidos_udec/Visual/adminscreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,6 +35,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final List<Objeto> _objetos = [];
+  bool admin = false;
   String _busqueda = '';
   String? _filtroFacultad;
   String? _filtroCategoria;
@@ -60,6 +62,102 @@ class _MainScreenState extends State<MainScreen> {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  void _eliminarObjeto(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar eliminación'),
+          content: const Text(
+            '¿Estás seguro de que deseas eliminar este reporte? Esta acción no se puede deshacer.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  final objetoEliminado = _objetosFiltrados[index];
+                  _objetos.remove(objetoEliminado);
+                });
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Reporte eliminado exitosamente'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _aprobarObjeto(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Aprobar reporte'),
+          content: const Text(
+            '¿Deseas verificar este reporte? Esto confirmará que la información es correcta.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  final objetoAprobado = _objetosFiltrados[index];
+                  final indexOriginal = _objetos.indexOf(objetoAprobado);
+
+                  if (indexOriginal != -1) {
+                    // Se crea un objeto nuevo con otro estado de verificacion
+                    final objetoActualizado = Objeto(
+                      idObjeto: objetoAprobado.idObjeto,
+                      nombreObjeto: objetoAprobado.nombreObjeto,
+                      descripcionObjeto: objetoAprobado.descripcionObjeto,
+                      categoria: objetoAprobado.categoria,
+                      lugarEncontrado: objetoAprobado.lugarEncontrado,
+                      facultad: objetoAprobado.facultad,
+                      fechaEncontrado: objetoAprobado.fechaEncontrado,
+                      contacto: objetoAprobado.contacto,
+                      estadoEncuentro: objetoAprobado.estadoEncuentro,
+                      estadoVerificacion: true, // ✅ Cambiar a verificado
+                      lat: objetoAprobado.lat,
+                      long: objetoAprobado.long,
+                      imagen: objetoAprobado.imagen,
+                    );
+
+                    // Se reemplaza en la lista
+                    _objetos[indexOriginal] = objetoActualizado;
+                  }
+                });
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Reporte verificado exitosamente'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.green),
+              child: const Text('Aprobar'),
+            ),
+          ],
         );
       },
     );
@@ -334,13 +432,13 @@ class _MainScreenState extends State<MainScreen> {
                   colors: [Colors.blue[700]!, Colors.blue[500]!],
                 ),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Icon(Icons.school, color: Colors.white, size: 48),
-                  SizedBox(height: 12),
-                  Text(
+                  const Icon(Icons.school, color: Colors.white, size: 48),
+                  const SizedBox(height: 12),
+                  const Text(
                     'Objetos Perdidos',
                     style: TextStyle(
                       color: Colors.white,
@@ -348,9 +446,34 @@ class _MainScreenState extends State<MainScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(
-                    'UdeC',
-                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  Row(
+                    children: [
+                      const Text(
+                        'UdeC',
+                        style: TextStyle(color: Colors.white70, fontSize: 16),
+                      ),
+                      if (admin) ...[
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'ADMIN',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
@@ -377,6 +500,41 @@ class _MainScreenState extends State<MainScreen> {
                     builder: (context) => const PuntosAcopioScreen(),
                   ),
                 );
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.verified_user_sharp,
+                color: Colors.blue,
+              ),
+              title: Text(admin ? 'Cerrar Sesión Admin' : 'Log-In Admin'),
+              onTap: () async {
+                Navigator.pop(context);
+                if (admin) {
+                  // Cerrar sesión
+                  setState(() {
+                    admin = false;
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Sesión de administrador cerrada'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                } else {
+                  // Iniciar sesión
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AdminScreen(),
+                    ),
+                  );
+                  if (result == true) {
+                    setState(() {
+                      admin = true;
+                    });
+                  }
+                }
               },
             ),
             const Divider(),
@@ -472,6 +630,27 @@ class _MainScreenState extends State<MainScreen> {
                                 ],
                               ),
                             ),
+                            // Botones de admin
+                            if (admin) ...[
+                              // Botón de aprobar
+                              if (!objeto.isVerificado)
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.check_circle_outline,
+                                    color: Colors.green,
+                                  ),
+                                  tooltip: 'Aprobar reporte',
+                                  onPressed: () => _aprobarObjeto(index),
+                                ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                ),
+                                tooltip: 'Eliminar reporte',
+                                onPressed: () => _eliminarObjeto(index),
+                              ),
+                            ],
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -977,7 +1156,6 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                         enabled: !_isLoading,
                       ),
                       const SizedBox(height: 16),
-
                       ElevatedButton.icon(
                         icon: const Icon(Icons.map_outlined),
                         label: const Text("Elegir ubicación en el mapa"),
