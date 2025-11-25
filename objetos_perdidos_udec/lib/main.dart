@@ -799,33 +799,43 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
     }
   }
 
-  Future<void> _seleccionarImagen() async {
-    try {
-      final XFile? pickedFile = await _picker.pickImage(
-        source: ImageSource.gallery,
-      );
-      if (pickedFile != null) {
-        final mimeType = pickedFile.mimeType;
+Future<void> _seleccionarImagen() async {
+  try {
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
+    
+    if (pickedFile != null) {
+      final mimeType = pickedFile.mimeType;
+      // Obtenemos la extensión del archivo y la pasamos a minúsculas
+      final String path = pickedFile.path.toLowerCase();
+      final bool esFormatoValido = 
+          (mimeType == 'image/png' || mimeType == 'image/jpeg') ||
+          (mimeType == null && (path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg')));
 
-        if (mimeType == 'image/png' || mimeType == 'image/jpeg') {
-          setState(() {
-            _imagenSeleccionada =
-                pickedFile; // ✅ Asignar directamente, sin XFile()
-          });
-        } else {
+      if (esFormatoValido) {
+        setState(() {
+          _imagenSeleccionada = pickedFile;
+        });
+      } else {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Solo se permiten imágenes PNG o JPG'),
+              content: Text('Solo se permiten imágenes PNG o JPEG (JPG)'),
+              backgroundColor: Colors.red,
             ),
           );
         }
       }
-    } catch (e) {
+    }
+  } catch (e) {
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al seleccionar imagen: $e')),
       );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -1010,7 +1020,7 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.image_outlined),
-                        label: const Text('Subir Imagen (PNG/JPG)'),
+                        label: const Text('Subir Imagen (PNG/JPEG/JPG)'),
                         onPressed: _isLoading ? null : _seleccionarImagen,
                       ),
                       if (_imagenSeleccionada != null)
