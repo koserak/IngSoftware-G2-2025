@@ -40,6 +40,9 @@ dependencies:
   image_picker: ^1.2.1
   mime: ^2.0.0
 
+  #Para guardar datos localmente
+  shared_preferences: ^2.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
