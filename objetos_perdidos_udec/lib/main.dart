@@ -7,6 +7,7 @@ import 'package:objetos_perdidos_udec/Modelo/Objeto.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 import 'package:objetos_perdidos_udec/Visual/adminscreen.dart';
+import 'package:objetos_perdidos_udec/Modelo/Almacenamiento.dart';
 
 void main() {
   runApp(const MyApp());
@@ -34,13 +35,35 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final List<Objeto> _objetos = [];
+  // Quitamos el 'final' para poder cargar la lista guardada
+  List<Objeto> _objetos = [];
+  
   bool admin = false;
   String _busqueda = '';
   String? _filtroFacultad;
   String? _filtroCategoria;
   String? _filtroEstado; // "Perdido" o "Encontrado"
   String? _filtroVerificado; // "Verificado" o "No Verificado"
+
+  @override
+  void initState() {
+    super.initState();
+    // Cargamos los datos guardados al iniciar la app
+    _cargarDatosLocales();
+  }
+
+  // Función para cargar datos desde Shared Preferences
+  Future<void> _cargarDatosLocales() async {
+    final objetosGuardados = await Almacenamiento.obtenerObjetos();
+    setState(() {
+      _objetos = objetosGuardados;
+    });
+  }
+
+  // Función auxiliar para guardar cambios
+  void _actualizarAlmacenamiento() {
+    Almacenamiento.guardarObjetos(_objetos);
+  }
 
   void _mostrarDialogoReportarObjeto() {
     showDialog(
@@ -51,6 +74,8 @@ class _MainScreenState extends State<MainScreen> {
           onObjetoReportado: (objeto) {
             setState(() {
               _objetos.insert(0, objeto);
+              // Guardamos el cambio
+              _actualizarAlmacenamiento();
             });
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -86,6 +111,8 @@ class _MainScreenState extends State<MainScreen> {
                 setState(() {
                   final objetoEliminado = _objetosFiltrados[index];
                   _objetos.remove(objetoEliminado);
+                  // Guardamos el cambio tras eliminar
+                  _actualizarAlmacenamiento();
                 });
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -144,6 +171,8 @@ class _MainScreenState extends State<MainScreen> {
 
                     // Se reemplaza en la lista
                     _objetos[indexOriginal] = objetoActualizado;
+                    // Guardamos el cambio tras verificar
+                    _actualizarAlmacenamiento();
                   }
                 });
                 Navigator.of(context).pop();
@@ -199,7 +228,6 @@ class _MainScreenState extends State<MainScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        // Mostrar todos los tipos posibles aunque no haya objetos
         final categorias = [
           'Electrónicos',
           'Documentos',
@@ -978,43 +1006,45 @@ class _ReportarObjetoDialogState extends State<ReportarObjetoDialog> {
     }
   }
 
-Future<void> _seleccionarImagen() async {
-  try {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
-    );
-    
-    if (pickedFile != null) {
-      final mimeType = pickedFile.mimeType;
-      // Obtenemos la extensión del archivo y la pasamos a minúsculas
-      final String path = pickedFile.path.toLowerCase();
-      final bool esFormatoValido = 
-          (mimeType == 'image/png' || mimeType == 'image/jpeg') ||
-          (mimeType == null && (path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg')));
+  Future<void> _seleccionarImagen() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+      );
+      
+      if (pickedFile != null) {
+        final mimeType = pickedFile.mimeType;
+        // Obtenemos la extensión del archivo y la pasamos a minúsculas
+        final String path = pickedFile.path.toLowerCase();
+        
+        // Validación corregida para soportar Windows (donde mimeType puede ser null)
+        final bool esFormatoValido = 
+            (mimeType == 'image/png' || mimeType == 'image/jpeg') ||
+            (mimeType == null && (path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg')));
 
-      if (esFormatoValido) {
-        setState(() {
-          _imagenSeleccionada = pickedFile;
-        });
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Solo se permiten imágenes PNG o JPEG (JPG)'),
-              backgroundColor: Colors.red,
-            ),
-          );
+        if (esFormatoValido) {
+          setState(() {
+            _imagenSeleccionada = pickedFile;
+          });
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Solo se permiten imágenes PNG o JPEG (JPG)'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       }
-    }
-  } catch (e) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al seleccionar imagen: $e')),
-      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al seleccionar imagen: $e')),
+        );
+      }
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {

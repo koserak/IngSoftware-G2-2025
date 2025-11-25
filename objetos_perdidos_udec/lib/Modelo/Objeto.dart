@@ -1,6 +1,6 @@
 // Modelo de datos para un objeto encontrado/perdido
 import 'package:image_picker/image_picker.dart';
-class Objeto{
+class Objeto {
   final String idObjeto;
   final String nombreObjeto;
   final String descripcionObjeto;
@@ -32,14 +32,48 @@ class Objeto{
   });
 
   String get getIdObjeto => idObjeto;
-
   String get getDescripcionObjeto => descripcionObjeto;
-
-  bool get isEncontrado => estadoEncuentro; // false significa que no se ha encontrado el objeto
-
-  bool get isVerificado => estadoVerificacion; // false significa que no a sido verificado por un administrador
-
+  bool get isEncontrado => estadoEncuentro;
+  bool get isVerificado => estadoVerificacion;
   String get getCategoria => categoria;
-
   String get getLugarEncontrado => lugarEncontrado;
+
+  // Convertir un Objeto a un Mapa (JSON)
+  Map<String, dynamic> toJson() {
+    return {
+      'idObjeto': idObjeto,
+      'nombreObjeto': nombreObjeto,
+      'descripcionObjeto': descripcionObjeto,
+      'categoria': categoria,
+      'lugarEncontrado': lugarEncontrado,
+      'facultad': facultad,
+      'contacto': contacto,
+      'fechaEncontrado': fechaEncontrado.toIso8601String(), // Guardamos fecha como texto
+      'estadoEncuentro': estadoEncuentro,
+      'estadoVerificacion': estadoVerificacion,
+      'lat': lat,
+      'long': long,
+      'imagenPath': imagen?.path, // Guardamos solo la ruta de la imagen
+    };
+  }
+
+  // Crear un Objeto desde un Mapa (JSON)
+  factory Objeto.fromJson(Map<String, dynamic> json) {
+    return Objeto(
+      idObjeto: json['idObjeto'],
+      nombreObjeto: json['nombreObjeto'],
+      descripcionObjeto: json['descripcionObjeto'],
+      categoria: json['categoria'],
+      lugarEncontrado: json['lugarEncontrado'],
+      facultad: json['facultad'],
+      contacto: json['contacto'],
+      fechaEncontrado: DateTime.parse(json['fechaEncontrado']),
+      estadoEncuentro: json['estadoEncuentro'],
+      estadoVerificacion: json['estadoVerificacion'],
+      lat: json['lat'],
+      long: json['long'],
+      // Si hay ruta, creamos el XFile, si no, es null
+      imagen: json['imagenPath'] != null ? XFile(json['imagenPath']) : null,
+    );
+  }
 }
