@@ -1,7 +1,7 @@
 ### Roles
-- Scrum Master: Benjamín López.
-- Product Owner: Ignacio Soto 
-- Equipo de Desarrollo: Kurt Koserak, Mariel Muñoz, Jhostian San Martin.
+- Scrum Master: Ignacio Soto.
+- Product Owner: Mariel Muñoz 
+- Equipo de Desarrollo: Kurt Koserak, Benjamin Lopez, Jhostian San Martin.
 
 ### Vision de Proyecto
 
@@ -24,4 +24,5 @@ Se termina de construir la versión mínima viable, implementando un sistema de 
 Se implementa un nuevo rol, administrador/moderador, encargado de verificar las publicaciones y su autenticidad.
 Este también actúa como mediador en la entrega de objetos perdidos realizada por usuarios, lo que permite mitigar el riesgo de estafas y asegurar
 la veracidad de las publicaciones, reforzando el sentido de confianza de los usuarios. Se refuerza el apartado visual.
+
 
