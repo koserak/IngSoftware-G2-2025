@@ -55,6 +55,7 @@ class Objeto {
       'estadoEncuentro': estadoEncuentro,
       'estadoVerificacion': estadoVerificacion,
       'isResuelto': isResuelto,
+      'lat' : lat,
       'long': long,
       'imagenPath': imagen?.path, // Guardamos solo la ruta de la imagen
     };
