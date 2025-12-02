@@ -3,7 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../Modelo/PuntoAcopio.dart';
 
 class PuntosAcopioScreen extends StatefulWidget {
-  const PuntosAcopioScreen({Key? key}) : super(key: key);
+  const PuntosAcopioScreen({super.key});
 
   @override
   State<PuntosAcopioScreen> createState() => _PuntosAcopioScreenState();
