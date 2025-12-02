@@ -1,12 +1,12 @@
 # Sprint Review
 ## Roles 
 ### Scrum Master 
- -  Benjamin Lopez.
+ -  Ingacio Soto.
 ### Product Owner 
- -  Ignacio Soto.
+ -  Mariel Muñoz.
 ### Desarroladores 
  -  Kurt Koserak.
- -  Mariel Muñoz.
+ -  Benjamin López.
  -  Jhostian San Martin.
 
 ## Revisión
