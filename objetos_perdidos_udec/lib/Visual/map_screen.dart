@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -21,8 +22,8 @@ class MapScreen extends StatelessWidget {
           TileLayer(
             urlTemplate: 
               "https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png?api_key={apiKey}",
-              additionalOptions: const{
-                'apiKey' : '20aba97e-7b65-437d-8f1e-a9d91a8ff2df'
+              additionalOptions: {
+              'apiKey': dotenv.env['API_KEY']!,
               },
                           userAgentPackageName: 'com.example.app',
           ),

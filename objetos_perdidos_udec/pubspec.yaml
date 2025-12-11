@@ -42,6 +42,7 @@ dependencies:
 
   #Para guardar datos localmente
   shared_preferences: ^2.2.2
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:

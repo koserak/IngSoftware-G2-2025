@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:objetos_perdidos_udec/Visual/elegirubicacionscreen.dart';
 import 'package:objetos_perdidos_udec/Visual/puntos_acopio_screen.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -11,7 +12,9 @@ import 'package:objetos_perdidos_udec/Modelo/Almacenamiento.dart';
 import 'package:objetos_perdidos_udec/Visual/match_dialog.dart';
 import 'package:objetos_perdidos_udec/Visual/admin_matches_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -775,9 +778,9 @@ class _MainScreenState extends State<MainScreen> {
                                     TileLayer(
                                       urlTemplate:
                                           "https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png?api_key={apiKey}",
-                                      additionalOptions: const {
-                                        'apiKey':
-                                            '20aba97e-7b65-437d-8f1e-a9d91a8ff2df',
+                                      additionalOptions:  {
+                                      'apiKey': 
+                                      dotenv.env['API_KEY']!,
                                       },
                                     ),
                                     MarkerLayer(
